@@ -26,10 +26,10 @@ logger.addHandler(console_handler)
 
 def data_loads(path: str) -> pd.DataFrame:
     try:
-        x_test_bow = pd.read_csv(path)
+        x_test_countvect = pd.read_csv(path)
 
         logger.debug('SUCCESSFULLY data load')
-        return x_test_bow
+        return x_test_countvect
 
     except Exception as e:
         logger.error('There is some problem in data loading', exc_info=True)
@@ -50,10 +50,10 @@ def model_loads(path: str) -> xgb:
 
 # -----------------------------------------------------------------------------
 
-def data_spliting(x_test_bow: pd.DataFrame) -> np.ndarray:
+def data_spliting(x_test_countvect: pd.DataFrame) -> np.ndarray:
     try:
-        x_test = x_test_bow.iloc[:, 0:-1]
-        y_test = x_test_bow.iloc[:, -1]
+        x_test = x_test_countvect.iloc[:, 0:-1]
+        y_test = x_test_countvect.iloc[:, -1]
 
         logger.debug('SUCCESSFULLY data split')
         return x_test, y_test
@@ -112,9 +112,9 @@ def result_store(metrics: dict, path: str) -> None:
 
 def main():
     try:
-        x_test_bow = data_loads(r'./data/processed/train_transformed.csv')
+        x_test_countvect = data_loads(r'./data/processed/test_transformed_countvect.csv')
         xgb = model_loads('mlops_onego/models/model.pkl')
-        x_test, y_test = data_spliting(x_test_bow)
+        x_test, y_test = data_spliting(x_test_countvect)
         y_pred, y_pred_proba = predictions(xgb, x_test)
         metrics = evaluation(y_test, y_pred, y_pred_proba)
         result_store(metrics, 'mlops_onego/reports/metrics.json')

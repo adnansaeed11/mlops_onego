@@ -2,7 +2,7 @@ import os
 import yaml
 import logging
 import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import CountVectorizer
 
 # ----------------------------------------------------------------------------- #
 
@@ -57,17 +57,17 @@ def data_splitting(train_data: pd.DataFrame, test_data: pd.DataFrame) -> tuple:
 
 # ----------------------------------------------------------------------------- #
 
-def tfidf_vector(x_train, x_test, y_train, y_test, max_feature: int) -> tuple[pd.DataFrame, pd.DataFrame]:
+def count_vector(x_train, x_test, y_train, y_test, max_feature: int) -> tuple[pd.DataFrame, pd.DataFrame]:
     try:
-        vectorizer = TfidfVectorizer(max_features=max_feature)
+        vectorizer = CountVectorizer(max_features=max_feature)
 
-        x_train_tfidf = vectorizer.fit_transform(x_train)
-        x_test_tfidf = vectorizer.transform(x_test)
+        x_train_countvect = vectorizer.fit_transform(x_train)
+        x_test_countvect = vectorizer.transform(x_test)
 
-        train_df = pd.DataFrame(x_train_tfidf.toarray())
+        train_df = pd.DataFrame(x_train_countvect.toarray())
         train_df['label'] = y_train
 
-        test_df = pd.DataFrame(x_test_tfidf.toarray())
+        test_df = pd.DataFrame(x_test_countvect.toarray())
         test_df['label'] = y_test
 
         logger.debug('SUCCESSFULLY applied TF-IDF and transformed data')
@@ -77,10 +77,10 @@ def tfidf_vector(x_train, x_test, y_train, y_test, max_feature: int) -> tuple[pd
 
 # ----------------------------------------------------------------------------- #
 
-def storing(x_train_tfidf: pd.DataFrame, x_test_tfidf: pd.DataFrame, data_path: str) -> None:
+def storing(x_train_countvect: pd.DataFrame, x_test_countvect: pd.DataFrame, data_path: str) -> None:
     try:
-        x_train_tfidf.to_csv(os.path.join(data_path, 'train_transformed.csv'), index=False)
-        x_test_tfidf.to_csv(os.path.join(data_path, 'test_transformed.csv'), index=False)
+        x_train_countvect.to_csv(os.path.join(data_path, 'train_transformed_countvect.csv'), index=False)
+        x_test_countvect.to_csv(os.path.join(data_path, 'test_transformed_countvect.csv'), index=False)
 
         logger.debug('SUCCESSFULLY stored data')
     except Exception as e:
@@ -96,12 +96,12 @@ def main():
         x_train, x_test, y_train, y_test = data_splitting(train_data, test_data)
 
         max_feature = params['feature_engineering']['max_features']
-        x_train_tfidf, x_test_tfidf = tfidf_vector(x_train, x_test, y_train, y_test, max_feature)
+        x_train_countvect, x_test_countvect = count_vector(x_train, x_test, y_train, y_test, max_feature)
 
         data_path = os.path.join("./data", "processed")
         os.makedirs(data_path, exist_ok=True)
 
-        storing(x_train_tfidf, x_test_tfidf, data_path)
+        storing(x_train_countvect, x_test_countvect, data_path)
 
         logger.debug('main() ran SUCCESSFULLY')
     except Exception as e:

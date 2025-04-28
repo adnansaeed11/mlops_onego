@@ -34,29 +34,29 @@ def load_params(path: str) -> dict:
 
 def data_loading(path1: str) -> pd.DataFrame:
     try:
-        train_transformed = pd.read_csv(path1)
+        train_transformed_countvect = pd.read_csv(path1)
         logger.debug('SUCCESSFULLY data loaded')
-        return train_transformed
+        return train_transformed_countvect
     
     except Exception as e:
         logger.error('Something error in data loading file', exc_info=True)
 
 # -----------------------------------------------------------------------------
 
-def training_spliting(train_transformed: pd.DataFrame) -> np.ndarray:
+def training_spliting(train_transformed_countvect: pd.DataFrame) -> np.ndarray:
     try:
-        X_train_bow = train_transformed.iloc[:, 0:-1]
-        y_train = train_transformed.iloc[:, -1]
+        X_train_countvect = train_transformed_countvect.iloc[:, 0:-1]
+        y_train_countvect = train_transformed_countvect.iloc[:, -1]
 
         logger.debug('SUCCESSFULLY training data split into two parts')
-        return X_train_bow, y_train
+        return X_train_countvect, y_train_countvect
 
     except Exception as e:
         logger.error('There is some issue in training_spliting function')
 
 # -----------------------------------------------------------------------------
 
-def training_time(X_train_bow: np.ndarray, y_train: np.ndarray, max_depth: int, learning_rate: int, n_estimators: int) -> xgb:
+def training_time(X_train_countvect: np.ndarray, y_train: np.ndarray, max_depth: int, learning_rate: int, n_estimators: int) -> xgb:
     try:
         xgb_model = xgb.XGBClassifier(
             use_label_encoder=False,
@@ -65,7 +65,7 @@ def training_time(X_train_bow: np.ndarray, y_train: np.ndarray, max_depth: int, 
             learning_rate=learning_rate,
             n_estimators=n_estimators
         )
-        xgb_model.fit(X_train_bow, y_train)
+        xgb_model.fit(X_train_countvect, y_train)
 
         logger.debug('SUCCESSFULLY Model Fit')
         return xgb_model
@@ -89,14 +89,14 @@ def model_store(model: xgb, path: str) -> None:
 def main():
     try:
         params = load_params('params.yaml')
-        train_transformed = data_loading(r'./data/processed/train_transformed.csv')
-        X_train_bow, y_train = training_spliting(train_transformed)
+        train_transformed = data_loading(r'./data/processed/train_transformed_countvect.csv')
+        X_train_countvect, y_train_countvect = training_spliting(train_transformed)
 
         max_depth = params['model_building']['max_depth']
         learning_rate = params['model_building']['learning_rate']
         n_estimators = params['model_building']['n_estimators']
 
-        xgb_model = training_time(X_train_bow, y_train, max_depth, learning_rate, n_estimators)
+        xgb_model = training_time(X_train_countvect, y_train_countvect, max_depth, learning_rate, n_estimators)
         model_store(xgb_model, 'mlops_onego/models/model.pkl')
         logger.debug('SUCCESSFULLY run main() file')
 
