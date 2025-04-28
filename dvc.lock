@@ -1,0 +1,95 @@
+schema: '2.0'
+stages:
+  data_ingestion:
+    cmd: python mlops_onego/src/data/data_ingestion.py
+    deps:
+    - path: mlops_onego/src/data/data_ingestion.py
+      hash: md5
+      md5: 4f2bf78e59afafbf793f3f3f334cdcd2
+      size: 3297
+    params:
+      params.yaml:
+        data_ingestion.test_size: 0.2
+    outs:
+    - path: ./data/raw
+      hash: md5
+      md5: fb326d2eec197669f9638afde28356bf.dir
+      size: 827973
+      nfiles: 2
+  data_preprocessing:
+    cmd: python mlops_onego/src/data/data_preprocessing.py
+    deps:
+    - path: ./data/raw
+      hash: md5
+      md5: fb326d2eec197669f9638afde28356bf.dir
+      size: 827973
+      nfiles: 2
+    - path: mlops_onego/src/data/data_preprocessing.py
+      hash: md5
+      md5: 889fe7ebabb9303385d92755629d023b
+      size: 5360
+    outs:
+    - path: ./data/interim
+      hash: md5
+      md5: ef37afd17951ea8af23114b28d26f784.dir
+      size: 566210
+      nfiles: 2
+  feature_engineering:
+    cmd: python mlops_onego/src/features/feature_engineering.py
+    deps:
+    - path: ./data/interim
+      hash: md5
+      md5: ef37afd17951ea8af23114b28d26f784.dir
+      size: 566210
+      nfiles: 2
+    - path: mlops_onego/src/features/feature_engineering.py
+      hash: md5
+      md5: 92fb7cc93309834fdbaf9b815b06091b
+      size: 4338
+    params:
+      params.yaml:
+        feature_engineering.max_features: 250
+    outs:
+    - path: ./data/processed
+      hash: md5
+      md5: ecea38396a900e1f720348c5d55c8a59.dir
+      size: 11546657
+      nfiles: 2
+  model_building:
+    cmd: python mlops_onego/src/model/model_building.py
+    deps:
+    - path: ./data/processed
+      hash: md5
+      md5: ecea38396a900e1f720348c5d55c8a59.dir
+      size: 11546657
+      nfiles: 2
+    - path: mlops_onego/src/model/model_building.py
+      hash: md5
+      md5: fca104bcefb1d924339099e21ab24f45
+      size: 3907
+    params:
+      params.yaml:
+        model_building.learning_rate: 0.1
+        model_building.max_depth: 6
+        model_building.n_estimators: 50
+    outs:
+    - path: mlops_onego/models/model.pkl
+      hash: md5
+      md5: f3d1568b7d53e42f5cde2797b1ed4255
+      size: 120019
+  model_evaluation:
+    cmd: python mlops_onego/src/model/model_evaluation.py
+    deps:
+    - path: mlops_onego/models/model.pkl
+      hash: md5
+      md5: f3d1568b7d53e42f5cde2797b1ed4255
+      size: 120019
+    - path: mlops_onego/src/model/model_evaluation.py
+      hash: md5
+      md5: 69922e79de70e2810c69a224cd3fcd4a
+      size: 4306
+    outs:
+    - path: mlops_onego/reports/metrics.json
+      hash: md5
+      md5: 173567d9540205ca1b8b164d8cd77b96
+      size: 142
